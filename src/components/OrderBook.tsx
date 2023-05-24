@@ -1,15 +1,36 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectOrderBook } from '../features/orderBook/orderBookSlice';
 import {
   selectPrecision,
   setPrecision,
 } from '../features/precision/precisionSlice';
+import {
+  selectIsConnected,
+  setConnected,
+  setDisconnected,
+} from '../features/websocket/websocketSlice';
+
+import WebSocketService from '../services/WebSocketService';
 
 const OrderBook: React.FC = () => {
   const orderBook = useSelector(selectOrderBook);
   const precision = useSelector(selectPrecision);
+  const isConnected = useSelector(selectIsConnected);
   const dispatch = useDispatch();
+  const websocketService = WebSocketService.getInstance(dispatch);
+
+  useEffect(() => {
+    if (isConnected) {
+      websocketService.connect();
+    } else {
+      websocketService.disconnect();
+    }
+
+    return () => {
+      websocketService.disconnect();
+    };
+  }, [websocketService, isConnected]);
 
   const handlePrecisionChange = (
     event: React.ChangeEvent<HTMLSelectElement>,
@@ -17,8 +38,18 @@ const OrderBook: React.FC = () => {
     dispatch(setPrecision(Number(event.target.value)));
   };
 
+  const handleConnectClick = () => {
+    dispatch(setConnected());
+  };
+
+  const handleDisconnectClick = () => {
+    dispatch(setDisconnected());
+  };
+
   return (
     <div>
+      <button onClick={handleConnectClick}>Connect</button>
+      <button onClick={handleDisconnectClick}>Disconnect</button>
       <h2>Order Book</h2>
       <label>
         Precision:
@@ -29,26 +60,42 @@ const OrderBook: React.FC = () => {
           <option value={4}>4</option>
         </select>
       </label>
-      <div>
-        <h3>Bids</h3>
-        {orderBook.bids.map((bid, index) => (
-          <div key={index}>
-            {/* Format the price to the selected precision */}
-            Price: {bid.price.toFixed(precision)}
-            {/* Display the rest of the bid data */}
-          </div>
-        ))}
-      </div>
-      <div>
-        <h3>Asks</h3>
-        {orderBook.asks.map((ask, index) => (
-          <div key={index}>
-            {/* Format the price to the selected precision */}
-            Price: {ask.price.toFixed(precision)}
-            {/* Display the rest of the ask data */}
-          </div>
-        ))}
-      </div>
+      <table>
+        <thead>
+          <tr>
+            <th colSpan={3}>Bids</th>
+            <th colSpan={3}>Asks</th>
+          </tr>
+          <tr>
+            <th>Count</th>
+            <th>Amount</th>
+            <th>Total</th>
+            <th>Price</th>
+            <th>Price</th>
+            <th>Total</th>
+            <th>Amount</th>
+            <th>Count</th>
+          </tr>
+        </thead>
+        <tbody>
+          {orderBook.bids.map((bid, i) => (
+            <tr key={i}>
+              <td>{bid.count}</td>
+              <td>{bid.amount}</td>
+              <td>{bid.total}</td>
+              <td>{bid.price.toFixed(precision)}</td>
+              <td>
+                {orderBook.asks[i]
+                  ? orderBook.asks[i].price.toFixed(precision)
+                  : ''}
+              </td>
+              <td>{orderBook.asks[i] ? orderBook.asks[i].total : ''}</td>
+              <td>{orderBook.asks[i] ? orderBook.asks[i].amount : ''}</td>
+              <td>{orderBook.asks[i] ? orderBook.asks[i].count : ''}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };

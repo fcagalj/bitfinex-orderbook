@@ -1,9 +1,16 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../../app/store';
 
-interface OrderBookState {
-  bids: any[]; // replace any[] with the correct type for your bid data
-  asks: any[]; // replace any[] with the correct type for your ask data
+export type OrderBookEntry = {
+  count: number;
+  amount: number;
+  total: number;
+  price: number;
+};
+
+export interface OrderBookState {
+  bids: OrderBookEntry[];
+  asks: OrderBookEntry[];
 }
 
 const initialState: OrderBookState = {
@@ -11,7 +18,7 @@ const initialState: OrderBookState = {
   asks: [],
 };
 
-export const orderBookSlice = createSlice({
+const orderBookSlice = createSlice({
   name: 'orderBook',
   initialState,
   reducers: {
