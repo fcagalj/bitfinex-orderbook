@@ -1,17 +1,27 @@
 import React, { useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectOrderBook } from '../features/orderBook/orderBookSlice';
-import {
-  selectPrecision,
-  setPrecision,
-} from '../features/precision/precisionSlice';
+import { selectPrecision } from '../features/precision/precisionSlice';
 import {
   selectIsConnected,
   setConnected,
   setDisconnected,
 } from '../features/websocket/websocketSlice';
+import {
+  Container,
+  Table,
+  TableHeader,
+  Title,
+  SubTitle,
+  Button,
+  TitleContainer,
+  PrecisionButtonContainer,
+  TableColumnHeader,
+} from './OrderBook.styles';
 
 import WebSocketService from '../services/WebSocketService';
+import IncreasePrecisionIcon from '../icons/IncreasePrecisionIcon';
+import DecreasePrecisionIcon from '../icons/DecreasePrecisionIcon';
 
 const OrderBook: React.FC = () => {
   const orderBook = useSelector(selectOrderBook);
@@ -32,12 +42,6 @@ const OrderBook: React.FC = () => {
     };
   }, [websocketService, isConnected]);
 
-  const handlePrecisionChange = (
-    event: React.ChangeEvent<HTMLSelectElement>,
-  ) => {
-    dispatch(setPrecision(Number(event.target.value)));
-  };
-
   const handleConnectClick = () => {
     dispatch(setConnected());
   };
@@ -47,56 +51,66 @@ const OrderBook: React.FC = () => {
   };
 
   return (
-    <div>
-      <button onClick={handleConnectClick}>Connect</button>
-      <button onClick={handleDisconnectClick}>Disconnect</button>
-      <h2>Order Book</h2>
-      <label>
-        Precision:
-        <select value={precision} onChange={handlePrecisionChange}>
-          {/* Add as many options as needed, these are just examples */}
-          <option value={2}>2</option>
-          <option value={3}>3</option>
-          <option value={4}>4</option>
-        </select>
-      </label>
-      <table>
-        <thead>
+    <Container>
+      <Button onClick={handleConnectClick}>Connect</Button>
+      <Button onClick={handleDisconnectClick}>Disconnect</Button>
+      <TitleContainer>
+        <div>
+          <Title>
+            ORDER BOOK <SubTitle>BTC/USD</SubTitle>
+          </Title>
+        </div>
+        <PrecisionButtonContainer>
+          <Button onClick={() => websocketService.decreasePrecision()}>
+            <DecreasePrecisionIcon />
+          </Button>
+          <Button onClick={() => websocketService.increasePrecision()}>
+            <IncreasePrecisionIcon />
+          </Button>
+        </PrecisionButtonContainer>
+      </TitleContainer>
+
+      <Table>
+        <TableHeader>
           <tr>
-            <th colSpan={3}>Bids</th>
-            <th colSpan={3}>Asks</th>
+            <th colSpan={4}>Bids</th>
+            <th colSpan={4}>Asks</th>
           </tr>
           <tr>
-            <th>Count</th>
-            <th>Amount</th>
-            <th>Total</th>
-            <th>Price</th>
-            <th>Price</th>
-            <th>Total</th>
-            <th>Amount</th>
-            <th>Count</th>
+            <TableColumnHeader>COUNT</TableColumnHeader>
+            <TableColumnHeader>AMOUNT</TableColumnHeader>
+            <TableColumnHeader>TOTAL</TableColumnHeader>
+            <TableColumnHeader>PRICE</TableColumnHeader>
+            <TableColumnHeader>PRICE</TableColumnHeader>
+            <TableColumnHeader>TOTAL</TableColumnHeader>
+            <TableColumnHeader>AMOUNT</TableColumnHeader>
+            <TableColumnHeader>COUNT</TableColumnHeader>
           </tr>
-        </thead>
+        </TableHeader>
         <tbody>
           {orderBook.bids.map((bid, i) => (
             <tr key={i}>
               <td>{bid.count}</td>
-              <td>{bid.amount}</td>
-              <td>{bid.total}</td>
+              <td>{bid.amount.toFixed(4)}</td>
+              <td>{bid.total.toFixed(4)}</td>
               <td>{bid.price.toFixed(precision)}</td>
               <td>
                 {orderBook.asks[i]
                   ? orderBook.asks[i].price.toFixed(precision)
                   : ''}
               </td>
-              <td>{orderBook.asks[i] ? orderBook.asks[i].total : ''}</td>
-              <td>{orderBook.asks[i] ? orderBook.asks[i].amount : ''}</td>
+              <td>
+                {orderBook.asks[i] ? orderBook.asks[i].total.toFixed(4) : ''}
+              </td>
+              <td>
+                {orderBook.asks[i] ? orderBook.asks[i].amount.toFixed(4) : ''}
+              </td>
               <td>{orderBook.asks[i] ? orderBook.asks[i].count : ''}</td>
             </tr>
           ))}
         </tbody>
-      </table>
-    </div>
+      </Table>
+    </Container>
   );
 };
 

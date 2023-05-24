@@ -1,6 +1,12 @@
-# Getting Started with Create React App
+# Bitfinex Order Book Application
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This application displays a live order book for a selected cryptocurrency pair from the Bitfinex exchange. It uses the Bitfinex WebSocket API to receive real-time updates for the order book data.
+
+## Features
+
+- Live order book updates for cryptocurrency pairs
+- Real-time updates using WebSockets
+- Ability to select different cryptocurrency pairs
 
 ## Available Scripts
 
